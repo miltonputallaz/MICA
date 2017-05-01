@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "885875712080",
+    "firebase_url": "https://mica-64c89.firebaseio.com",
+    "project_id": "mica-64c89",
+    "storage_bucket": "mica-64c89.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885875712080:android:537e3525fded100f",
+        "android_client_info": {
+          "package_name": "los4studios.mica"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "885875712080-mqc9ea4flpu2h1fgpqlalgdrl58jq1qn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "los4studios.mica",
+            "certificate_hash": "9930a2d316a1f1b8b96101c1c14f6e6daf4d4f1e"
+          }
+        },
+        {
+          "client_id": "885875712080-gf5k3fl3ue7c64ba8qlvucb1hecmip2h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsG2WJezuXeKGWpKdjMcU3vFu5cKyVwiM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "885875712080-gf5k3fl3ue7c64ba8qlvucb1hecmip2h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
