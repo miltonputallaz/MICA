@@ -35,6 +35,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -74,9 +75,9 @@ public class MiServicio extends Service implements LocationListener, GoogleApiCl
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest);
          auth= FirebaseAuth.getInstance();
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
         database = FirebaseDatabase.getInstance();
-        
+
         databaseReference = database.getReference("registers").child(auth.getCurrentUser().getUid()).getRef();
 
         firebaseAuth=FirebaseAuth.getInstance();
@@ -86,12 +87,14 @@ public class MiServicio extends Service implements LocationListener, GoogleApiCl
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
        mGoogleApiClient.connect();
+
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+
         mGoogleApiClient.disconnect();
         super.onDestroy();
     }

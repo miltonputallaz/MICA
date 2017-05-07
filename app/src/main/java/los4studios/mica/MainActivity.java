@@ -11,6 +11,8 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -23,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -30,12 +33,21 @@ import com.firebase.ui.auth.ResultCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.gson.JsonObject;
 import com.squareup.picasso.Picasso;
 
 import java.util.Arrays;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import los4studios.mica.fragments.configurationFragment;
+import los4studios.mica.fragments.homeFragment;
+import los4studios.mica.helpers.Numero;
 import los4studios.mica.servicios.MiServicio;
 
 
@@ -45,18 +57,42 @@ public class MainActivity extends AppCompatActivity
     private TextView tvnombre;
     private TextView tvmail;
     private static final int RC_SIGN_IN = 123;
-    private Switch aSwitch;
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
     private LocationManager manager;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        firebaseDatabase=FirebaseDatabase.getInstance();
 
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
+        databaseReference= firebaseDatabase.getReference("relation").getRef();
+
         if (auth.getCurrentUser() != null) {
-            logged();
+            databaseReference.child(auth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!dataSnapshot.exists()){
+                    Numero numero = dataSnapshot.getValue(Numero.class);
+                    if (numero == null || String.valueOf(numero.getNumero()).isEmpty()) {
+                        Intent intent = new Intent(getApplicationContext(), numberActivity.class);
+                        startActivity(intent);}
+                    } else {
+                        logged();
+                    }
+Toast.makeText(getApplicationContext(),dataSnapshot.toString(),Toast.LENGTH_LONG).show();
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
         } else {
            Login();
         }
@@ -120,28 +156,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-        aSwitch = (Switch) findViewById(R.id.switchservice);
-        aSwitch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(aSwitch.isChecked()){
-                    if(checkInternetConnection()){
-                        startService(new Intent(MainActivity.this, MiServicio.class));
-                    } else {
-                        aSwitch.setChecked(false);
-
-                        buildAlertMessageNoGps();
-                    }
-
-                } else {
-
-                    stopService(new Intent(MainActivity.this, MiServicio.class));
-                }
-            }
-        });
-        if(isMyServiceRunning(MiServicio.class)){
-            aSwitch.setChecked(true);
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -162,7 +176,9 @@ public class MainActivity extends AppCompatActivity
             tvmail.setText(auth.getCurrentUser().getEmail());
         }
 
-
+        Fragment fragment = new homeFragment();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(R.id.contenedor,fragment).commit();
 
         Picasso.with(this).load(auth.getCurrentUser().getPhotoUrl()).noFade().into(civ);
 
@@ -212,8 +228,10 @@ public class MainActivity extends AppCompatActivity
                             Login();
                         }
                     });
-        } else if (id == R.id.nav_share) {
-
+        } else if (id == R.id.nav_config) {
+        Fragment fragment = new configurationFragment();
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            fragmentManager.beginTransaction().replace(R.id.contenedor,fragment).commit();
         } else if (id == R.id.nav_send) {
 
         }
@@ -224,42 +242,5 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    public boolean checkInternetConnection() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
-        return (activeNetworkInfo != null && activeNetworkInfo.isAvailable() && activeNetworkInfo.isConnected());
-    }
-
-    private void buildAlertMessageNoGps() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Tu GPS o internet no estan activados. Desea activarlo?")
-                .setCancelable(false)
-                .setPositiveButton("Si", new DialogInterface.OnClickListener() {
-
-                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
-                        dialog.cancel();
-                    }
-                });
-        final AlertDialog alert = builder.create();
-        alert.show();
-    }
-
-
-
-
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
